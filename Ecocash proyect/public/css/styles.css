@@ -1,0 +1,169 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+
+:root {
+  --primary-emerald: #059669;
+  --primary-glow: rgba(5, 150, 105, 0.25);
+  --accent-mint: #10b981;
+}
+
+body {
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  background-color: #f8fafc;
+  color: #0f172a;
+  overflow-x: hidden;
+}
+
+h1, h2, h3, h4, .font-heading {
+  font-family: 'Outfit', sans-serif;
+}
+
+/* Glassmorphism effects */
+.glass-nav {
+  background: rgba(255, 255, 255, 0.82);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(241, 245, 249, 1);
+  box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.04), 0 8px 10px -6px rgba(15, 23, 42, 0.02);
+}
+
+.glass-card-hover {
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.glass-card-hover:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 20px 30px -10px rgba(5, 150, 105, 0.12), 0 10px 10px -5px rgba(0, 0, 0, 0.03);
+  border-color: rgba(16, 185, 129, 0.3);
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Eco glow and gradient highlights */
+.eco-gradient-text {
+  background: linear-gradient(135deg, #059669 0%, #10b981 50%, #0d9488 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.eco-gradient-bg {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+}
+
+.eco-gradient-subtle {
+  background: radial-gradient(circle at 50% 0%, rgba(16, 185, 129, 0.08) 0%, rgba(248, 250, 252, 0) 70%);
+}
+
+/* Ecological Stickers Animation */
+.sticker-item {
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  cursor: pointer;
+  user-select: none;
+}
+.sticker-item:hover {
+  transform: scale(1.22) rotate(4deg);
+}
+.sticker-item:active {
+  transform: scale(0.92);
+}
+
+.sticker-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.65rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.04);
+}
+
+/* Pulse badge for AI active monitoring */
+@keyframes pulse-subtle {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.75; transform: scale(0.97); }
+}
+.ai-pulse-dot {
+  animation: pulse-subtle 2s infinite ease-in-out;
+}
+
+/* Modal transition styles */
+.modal-overlay {
+  transition: opacity 0.25s ease-out;
+}
+.modal-box {
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.modal-overlay.hidden-modal {
+  opacity: 0;
+  pointer-events: none;
+}
+.modal-overlay.hidden-modal .modal-box {
+  transform: scale(0.95) translateY(10px);
+}
+
+/* Tabs underline animation */
+.nav-tab-btn {
+  position: relative;
+  transition: color 0.2s;
+}
+.nav-tab-btn.active {
+  color: #059669;
+  font-weight: 700;
+}
+.nav-tab-btn.active::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  right: 0;
+  height: 2.5px;
+  background: #059669;
+  border-radius: 9999px;
+}
+
+/* Toast container */
+#toast-container {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  pointer-events: none;
+}
+.toast-msg {
+  pointer-events: auto;
+  animation: slide-in 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+@keyframes slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}

@@ -1,0 +1,1134 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EcoCash - Plataforma Escolar de Reciclaje Inteligente, Mercado y Upcycling con IA</title>
+  
+  <!-- Meta SEO y PWA básica -->
+  <meta name="description" content="EcoCash es un proyecto escolar sustentable impulsado por Google Gemini IA: aprende a reciclar en la Eco-Wiki, vende o dona residuos en el mercado, descubre proyectos DIY y participa en comentarios moderados por IA con stickers ecológicos.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌱</text></svg>">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#ecfdf5',
+              100: '#d1fae5',
+              200: '#a7f3d0',
+              500: '#10b981',
+              600: '#059669',
+              700: '#047857',
+              800: '#065f46',
+              900: '#064e3b',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Fuentes e Iconos -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="css/styles.css">
+
+  <!-- Firebase SDKs (Compatibles con CDN para Web) -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased min-h-screen flex flex-col eco-gradient-subtle">
+
+  <!-- ======================================================== -->
+  <!-- NAVBAR PRINCIPAL CON BLUR Y MENÚ RESPONSIVO              -->
+  <!-- ======================================================== -->
+  <header class="glass-nav sticky top-0 z-40 transition-all duration-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-4">
+      
+      <!-- Logotipo y Nombre del Proyecto Escolar -->
+      <div class="flex items-center gap-3 cursor-pointer" onclick="AppState.switchTab('market')">
+        <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-400 flex items-center justify-center text-white text-2xl shadow-lg shadow-emerald-500/25">
+          🌱
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="text-2xl font-black tracking-tight text-slate-900 font-heading">Eco<span class="text-emerald-600">Cash</span></span>
+            <span class="text-[10px] uppercase tracking-wider font-extrabold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300">
+              Proyecto Escolar
+            </span>
+          </div>
+          <span class="text-[11px] text-slate-500 block font-medium">Reciclaje • Mercado • DIY • Moderación IA</span>
+        </div>
+      </div>
+
+      <!-- Pestañas de Navegación (Desktop) -->
+      <nav class="hidden lg:flex items-center gap-1 bg-slate-100/90 p-1.5 rounded-2xl border border-slate-200/80 text-xs font-semibold text-slate-600">
+        <button id="tab-btn-market" onclick="AppState.switchTab('market')" class="nav-tab-btn active px-4 py-2 rounded-xl hover:text-emerald-700 transition-all flex items-center gap-1.5">
+          <span>🏪</span> Eco-Market
+        </button>
+        <button id="tab-btn-wiki" onclick="AppState.switchTab('wiki')" class="nav-tab-btn px-4 py-2 rounded-xl hover:text-emerald-700 transition-all flex items-center gap-1.5">
+          <span>📚</span> Wiki & Asesor IA
+        </button>
+        <button id="tab-btn-diy" onclick="AppState.switchTab('diy')" class="nav-tab-btn px-4 py-2 rounded-xl hover:text-emerald-700 transition-all flex items-center gap-1.5">
+          <span>💡</span> Tips & DIY
+        </button>
+        <button id="tab-btn-community" onclick="AppState.switchTab('community')" class="nav-tab-btn px-4 py-2 rounded-xl hover:text-emerald-700 transition-all flex items-center gap-1.5">
+          <span>💬</span> Foro con IA
+        </button>
+        <button id="tab-btn-cotizador" onclick="AppState.switchTab('cotizador')" class="nav-tab-btn px-4 py-2 rounded-xl hover:text-emerald-700 transition-all flex items-center gap-1.5">
+          <span>⚖️</span> Cotizador
+        </button>
+      </nav>
+
+      <!-- Botones de Acción y Usuario -->
+      <div class="flex items-center gap-2 sm:gap-3">
+        <!-- Botón Clave IA Gemini Directa -->
+        <button onclick="AppUI.openModal('modal-gemini-key')" class="flex items-center gap-1.5 text-xs font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 px-3 py-2.5 rounded-xl border border-emerald-200 transition-all shadow-sm" title="Configurar clave directa de Gemini (Sin límites)">
+          <span id="nav-ai-status-dot" class="w-2 h-2 rounded-full bg-emerald-500 inline-block animate-pulse"></span>
+          <span>🔑 Clave IA</span>
+        </button>
+
+        <!-- Botón Guía Online (Vercel / GitHub Pages) -->
+        <button onclick="AppUI.openModal('modal-deploy-guide')" class="hidden sm:flex items-center gap-1.5 text-xs font-bold text-slate-700 bg-white hover:bg-slate-100 px-3.5 py-2.5 rounded-xl border border-slate-200 shadow-sm transition-all" title="Instrucciones para publicar en Vercel o GitHub Pages gratis">
+          <span class="text-blue-500">🚀</span> Publicar Online
+        </button>
+
+        <!-- Widget de Autenticación de Usuario (Renderizado dinámico) -->
+        <div id="user-auth-widget"></div>
+      </div>
+    </div>
+
+    <!-- Barra de navegación móvil (Scroll horizontal) -->
+    <div class="lg:hidden flex items-center gap-2 overflow-x-auto px-4 py-2.5 bg-slate-100/70 border-t border-slate-200/60 no-scrollbar text-xs font-medium">
+      <button onclick="AppState.switchTab('market')" class="px-3 py-1.5 rounded-lg bg-white shadow-sm border border-slate-200 shrink-0 flex items-center gap-1">🏪 Market</button>
+      <button onclick="AppState.switchTab('wiki')" class="px-3 py-1.5 rounded-lg bg-white shadow-sm border border-slate-200 shrink-0 flex items-center gap-1">📚 Wiki IA</button>
+      <button onclick="AppState.switchTab('diy')" class="px-3 py-1.5 rounded-lg bg-white shadow-sm border border-slate-200 shrink-0 flex items-center gap-1">💡 Tips DIY</button>
+      <button onclick="AppState.switchTab('community')" class="px-3 py-1.5 rounded-lg bg-white shadow-sm border border-slate-200 shrink-0 flex items-center gap-1">💬 Foro IA</button>
+      <button onclick="AppState.switchTab('cotizador')" class="px-3 py-1.5 rounded-lg bg-white shadow-sm border border-slate-200 shrink-0 flex items-center gap-1">⚖️ Cotizador</button>
+      <button onclick="AppUI.openModal('modal-deploy-guide')" class="px-3 py-1.5 rounded-lg bg-blue-50 text-blue-700 border border-blue-200 shrink-0 flex items-center gap-1">🚀 En Línea</button>
+    </div>
+  </header>
+
+  <!-- ======================================================== -->
+  <!-- HERO BANNER Y MÉTRICAS ECOLÓGICAS                        -->
+  <!-- ======================================================== -->
+  <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-4 w-full">
+    <div class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-900 via-slate-800 to-emerald-950 text-white p-6 sm:p-12 shadow-2xl">
+      <!-- Círculos de luz decorativos -->
+      <div class="absolute -right-16 -top-16 w-80 h-80 rounded-full bg-emerald-500/20 blur-3xl pointer-events-none"></div>
+      <div class="absolute -left-16 -bottom-16 w-80 h-80 rounded-full bg-teal-500/15 blur-3xl pointer-events-none"></div>
+
+      <div class="relative z-10 max-w-3xl space-y-5">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 text-xs font-semibold backdrop-blur-md">
+          <span class="ai-pulse-dot">✨</span> Proyecto de Sustentabilidad y Economía Circular Escolar
+        </div>
+        
+        <h1 class="text-3xl sm:text-5xl font-extrabold tracking-tight leading-tight font-heading">
+          Convierte tus residuos en valor con <span class="eco-gradient-text">Inteligencia Artificial</span>
+        </h1>
+        
+        <p class="text-slate-300 text-sm sm:text-base leading-relaxed max-w-2xl">
+          Aprende qué y cómo reciclar en nuestra <strong>Eco-Wiki</strong>, vende o dona en el <strong>Mercado Escolar</strong>, dale una segunda vida a tu basura con <strong>proyectos DIY</strong> y participa en debates seguros protegidos por nuestro detector <strong>Anti-Bullshit y Groserías IA</strong>.
+        </p>
+
+        <!-- Botones de Acción Rápida -->
+        <div class="flex flex-wrap items-center gap-3 pt-2">
+          <button onclick="AppState.switchTab('market')" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs sm:text-sm font-bold py-3 px-6 rounded-2xl shadow-lg shadow-emerald-600/30 transition-all flex items-center gap-2">
+            <span>🛒</span> Explorar Eco-Market
+          </button>
+          <button onclick="AppState.switchTab('wiki')" class="bg-white/10 hover:bg-white/20 border border-white/20 text-white text-xs sm:text-sm font-bold py-3 px-6 rounded-2xl backdrop-blur-md transition-all flex items-center gap-2">
+            <span>🤖</span> Consultar Asesor IA
+          </button>
+          <button onclick="AppUI.openModal('modal-create-post')" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-emerald-400 text-xs sm:text-sm font-bold py-3 px-5 rounded-2xl transition-all flex items-center gap-2">
+            <span>➕</span> Publicar Residuo
+          </button>
+        </div>
+      </div>
+
+      <!-- Métricas Escolares en Vivo -->
+      <div class="relative z-10 grid grid-cols-2 sm:grid-cols-4 gap-4 mt-8 pt-8 border-t border-slate-700/60">
+        <div class="bg-white/5 backdrop-blur-md rounded-2xl p-4 border border-white/10">
+          <span class="block text-2xl sm:text-3xl font-black text-emerald-400 font-heading">+1,350 kg</span>
+          <span class="text-xs text-slate-300 font-medium">Residuos Clasificados</span>
+        </div>
+        <div class="bg-white/5 backdrop-blur-md rounded-2xl p-4 border border-white/10">
+          <span class="block text-2xl sm:text-3xl font-black text-teal-300 font-heading">$14,200 MXN</span>
+          <span class="text-xs text-slate-300 font-medium">Valor Estimado Escuela</span>
+        </div>
+        <div class="bg-white/5 backdrop-blur-md rounded-2xl p-4 border border-white/10">
+          <span class="block text-2xl sm:text-3xl font-black text-amber-300 font-heading">48 Guías</span>
+          <span class="text-xs text-slate-300 font-medium">Proyectos DIY Upcycling</span>
+        </div>
+        <div class="bg-white/5 backdrop-blur-md rounded-2xl p-4 border border-white/10">
+          <span class="block text-2xl sm:text-3xl font-black text-sky-300 font-heading">100% IA</span>
+          <span class="text-xs text-slate-300 font-medium">Moderación Anti-Bullshit</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================================================== -->
+  <!-- CONTENEDOR PRINCIPAL DE CONTENIDO (PESTAÑAS)            -->
+  <!-- ======================================================== -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full flex-grow space-y-12">
+
+    <!-- ====================================================== -->
+    <!-- PESTAÑA 1: ECO-MARKET (¿DÓNDE Y QUÉ TIRAR O VENDER?)   -->
+    <!-- ====================================================== -->
+    <section id="section-market" class="tab-content space-y-8">
+      
+      <!-- Cabecera de la sección -->
+      <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="text-2xl">🏪</span>
+            <h2 class="text-2xl sm:text-3xl font-bold text-slate-900 font-heading">Eco-Market Escolar</h2>
+          </div>
+          <p class="text-slate-500 text-sm mt-1">
+            Encuentra dónde y qué tirar, donar o vender. Conecta a estudiantes, talleres escolares y centros de acopio.
+          </p>
+        </div>
+
+        <!-- Botón para publicar nuevo elemento en el mercado -->
+        <div class="flex items-center gap-3">
+          <button onclick="AppUI.openModal('modal-create-post')" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs sm:text-sm py-3 px-6 rounded-2xl shadow-lg shadow-emerald-600/20 transition-all flex items-center gap-2">
+            <span>➕</span> Publicar en el Market
+          </button>
+        </div>
+      </div>
+
+      <!-- Barra de Filtros, Búsqueda y "Solo Mis Publicaciones" -->
+      <div class="bg-white p-4 sm:p-5 rounded-3xl border border-slate-200/90 shadow-sm space-y-4">
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-3 items-center">
+          
+          <!-- Buscador -->
+          <div class="md:col-span-4 relative">
+            <input type="text" 
+                   id="market-search" 
+                   oninput="AppState.marketSearchQuery = this.value; AppState.renderMarket()"
+                   placeholder="Buscar residuos, botellas, cartón, cobre..." 
+                   class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all">
+            <span class="absolute left-3.5 top-3 text-slate-400 text-xs">🔍</span>
+          </div>
+
+          <!-- Filtro por Tipo (Venta / Donación / Acopio) -->
+          <div class="md:col-span-3">
+            <select id="market-filter-type" 
+                    onchange="AppState.marketTypeFilter = this.value; AppState.renderMarket()"
+                    class="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500 font-medium">
+              <option value="all">Todos los Tipos</option>
+              <option value="Venta">💰 En Venta</option>
+              <option value="Donacion">🎁 Donación / Regalo</option>
+              <option value="PuntoAcopio">🏢 Puntos de Acopio</option>
+            </select>
+          </div>
+
+          <!-- Filtro por Categoría de Material -->
+          <div class="md:col-span-3">
+            <select id="market-filter-category" 
+                    onchange="AppState.marketCategoryFilter = this.value; AppState.renderMarket()"
+                    class="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500 font-medium">
+              <option value="all">Todas las Categorías</option>
+              <option value="Plásticos">Plásticos (PET, PEAD, Tapas)</option>
+              <option value="Metales">Metales y Chatarra (Cobre, Latas)</option>
+              <option value="Papel">Papel y Cartón</option>
+              <option value="Vidrio">Vidrio y Botellas</option>
+              <option value="Electrónicos">Electrónicos y Pilas</option>
+              <option value="Orgánicos">Orgánicos / Composta</option>
+            </select>
+          </div>
+
+          <!-- Toggle: Solo Mis Publicaciones -->
+          <div class="md:col-span-2 flex items-center justify-end">
+            <label class="inline-flex items-center gap-2 cursor-pointer text-xs font-semibold text-slate-700 bg-slate-50 px-3 py-2 rounded-xl border border-slate-200 hover:bg-slate-100 transition-all">
+              <input type="checkbox" 
+                     id="filter-only-mine" 
+                     onchange="AppState.onlyMyPosts = this.checked; AppState.renderMarket()"
+                     class="rounded text-emerald-600 focus:ring-emerald-500 h-4 w-4">
+              <span>Solo mis posts</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Explicación de Permisos de Autoría -->
+        <div class="flex items-center justify-between text-[11px] text-slate-500 pt-2 border-t border-slate-100">
+          <div class="flex items-center gap-1.5">
+            <span class="text-amber-500">🔒</span>
+            <span><strong>Regla de Seguridad:</strong> Solo el autor que publicó un ítem puede editarlo o eliminarlo del mercado.</span>
+          </div>
+          <span class="hidden sm:inline text-slate-400">Moderación y protección en tiempo real</span>
+        </div>
+      </div>
+
+      <!-- Cuadrícula Dinámica de Publicaciones del Mercado -->
+      <div id="market-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- Renderizado dinámico desde app.js -->
+      </div>
+    </section>
+
+    <!-- ====================================================== -->
+    <!-- PESTAÑA 2: ECO-WIKI Y ASESOR IA (APRENDE A RECICLAR)   -->
+    <!-- ====================================================== -->
+    <section id="section-wiki" class="tab-content hidden space-y-12">
+      
+      <!-- Bloque 1: Asesor Interactivo con IA (¿Qué reciclo, dónde y cómo?) -->
+      <div class="bg-gradient-to-br from-emerald-900 to-slate-900 rounded-3xl p-6 sm:p-10 text-white shadow-xl space-y-6">
+        <div class="max-w-2xl space-y-2">
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 text-xs font-bold border border-emerald-500/30">
+            <span class="ai-pulse-dot">🤖</span> Asesor Experto con Google Gemini IA
+          </div>
+          <h3 class="text-2xl sm:text-3xl font-extrabold font-heading">
+            ¿Tienes dudas con un residuo? Pregúntale al Eco-Asesor
+          </h3>
+          <p class="text-slate-300 text-xs sm:text-sm leading-relaxed">
+            Escribe cualquier objeto o basura que tengas a la mano. La IA te dirá si se puede reciclar, cómo prepararlo, dónde desecharlo o venderlo, y qué proyecto DIY puedes hacer.
+          </p>
+        </div>
+
+        <form onsubmit="AppState.handleAskAdvisor(event)" class="flex flex-col sm:flex-row gap-3">
+          <input type="text" 
+                 id="advisor-input" 
+                 required 
+                 placeholder="Ej. Caja de pizza grasosa, Pilas usadas, Foco ahorrador roto, Tetra Pak de leche..." 
+                 class="flex-grow px-5 py-3.5 rounded-2xl bg-white/10 border border-white/20 text-white placeholder-slate-400 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400 backdrop-blur-md">
+          <button type="submit" class="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold px-8 py-3.5 rounded-2xl transition-all shadow-lg shadow-emerald-500/25 flex items-center justify-center gap-2 text-sm shrink-0">
+            <span>🔍</span> Diagnosticar con IA
+          </button>
+        </form>
+
+        <!-- Chips de sugerencias rápidas -->
+        <div class="flex flex-wrap items-center gap-2 text-xs">
+          <span class="text-slate-400 font-semibold">Prueba con:</span>
+          <button type="button" onclick="document.getElementById('advisor-input').value='Caja de pizza grasosa'; AppState.handleAskAdvisor(event)" class="bg-white/10 hover:bg-white/20 px-3 py-1 rounded-lg border border-white/15 text-slate-200 transition-colors">🍕 Caja de pizza con grasa</button>
+          <button type="button" onclick="document.getElementById('advisor-input').value='Pilas alcalinas AA gastadas'; AppState.handleAskAdvisor(event)" class="bg-white/10 hover:bg-white/20 px-3 py-1 rounded-lg border border-white/15 text-slate-200 transition-colors">🔋 Pilas AA usadas</button>
+          <button type="button" onclick="document.getElementById('advisor-input').value='Aceite usado de cocina para freír'; AppState.handleAskAdvisor(event)" class="bg-white/10 hover:bg-white/20 px-3 py-1 rounded-lg border border-white/15 text-slate-200 transition-colors">🍳 Aceite vegetal usado</button>
+        </div>
+
+        <!-- Estado de Carga -->
+        <div id="advisor-loading" class="hidden text-center py-6">
+          <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-emerald-400 border-t-transparent"></div>
+          <p class="text-xs text-slate-300 mt-2 font-medium">Analizando composición química y reciclabilidad con Gemini...</p>
+        </div>
+
+        <!-- Tarjeta de Resultados del Asesor -->
+        <div id="advisor-result-card" class="hidden bg-white text-slate-800 rounded-2xl p-6 sm:p-8 space-y-6 shadow-2xl border border-emerald-100">
+          <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
+            <div>
+              <span class="text-xs text-slate-400 uppercase font-bold tracking-wider">Diagnóstico de Residuo</span>
+              <h4 id="advisor-res-item" class="text-2xl font-bold text-slate-900 capitalize font-heading">Material</h4>
+            </div>
+            <span id="advisor-res-badge" class="px-3 py-1 text-xs font-bold rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300">
+              Reciclable
+            </span>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+            <div class="bg-slate-50 p-4 rounded-xl border border-slate-100 space-y-1">
+              <span class="font-bold text-slate-700 block flex items-center gap-1.5">
+                <span>🧼</span> Instrucciones de Preparación
+              </span>
+              <p id="advisor-res-prep" class="text-slate-600 leading-relaxed"></p>
+            </div>
+
+            <div class="bg-slate-50 p-4 rounded-xl border border-slate-100 space-y-1">
+              <span class="font-bold text-slate-700 block flex items-center gap-1.5">
+                <span>📍</span> Dónde desecharlo o venderlo
+              </span>
+              <p id="advisor-res-where" class="text-slate-600 leading-relaxed"></p>
+            </div>
+
+            <div class="bg-emerald-50 p-4 rounded-xl border border-emerald-100 space-y-1 md:col-span-2">
+              <span class="font-bold text-emerald-800 block flex items-center gap-1.5">
+                <span>💡</span> Alternativa de Reutilización (Upcycling DIY)
+              </span>
+              <p id="advisor-res-diy" class="text-slate-700 leading-relaxed"></p>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between text-xs pt-2 text-slate-500">
+            <div>
+              <strong class="text-slate-700">Impacto ambiental:</strong> <span id="advisor-res-impact"></span>
+            </div>
+            <button onclick="AppState.switchTab('market')" class="text-emerald-600 font-bold hover:underline">
+              Ver si alguien lo compra en el Market →
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bloque 2: Buscador Enciclopédico Eco-Wiki con IA -->
+      <div class="bg-white rounded-3xl p-6 sm:p-10 border border-slate-200/90 shadow-sm space-y-6">
+        <div class="space-y-2">
+          <div class="flex items-center gap-2">
+            <span class="text-2xl">📚</span>
+            <h3 class="text-2xl font-bold text-slate-900 font-heading">Eco-Wiki Escolar de Materiales</h3>
+          </div>
+          <p class="text-slate-500 text-sm">
+            Catálogo interactivo con los códigos de reciclaje oficiales, guías de separación y valor económico.
+          </p>
+        </div>
+
+        <form onsubmit="AppState.handleWikiSearch(event)" class="flex gap-3">
+          <input type="text" 
+                 id="wiki-search-input" 
+                 required 
+                 placeholder="Buscar guía a fondo: 'Baterías de litio', 'Vidrio templado', 'Cartón tetrapak'..." 
+                 class="flex-grow px-4 py-3 rounded-2xl border border-slate-200 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all">
+          <button type="submit" class="bg-slate-900 hover:bg-slate-800 text-white font-bold px-6 py-3 rounded-2xl text-xs sm:text-sm transition-all shrink-0">
+            Consultar Wiki
+          </button>
+        </form>
+
+        <!-- Loading Wiki -->
+        <div id="wiki-loading" class="hidden text-center py-6">
+          <div class="inline-block animate-spin rounded-full h-7 w-7 border-4 border-emerald-500 border-t-transparent"></div>
+          <p class="text-xs text-slate-400 mt-2">Generando artículo enciclopédico ecológico con Gemini...</p>
+        </div>
+
+        <!-- Resultado Wiki -->
+        <div id="wiki-search-result" class="hidden p-6 rounded-2xl bg-emerald-50/60 border border-emerald-100 space-y-3">
+          <h4 id="wiki-result-title" class="text-xl font-bold text-slate-900 font-heading"></h4>
+          <div id="wiki-result-body" class="text-slate-600 text-xs sm:text-sm leading-relaxed space-y-2"></div>
+        </div>
+
+        <!-- Cuadrícula de Materiales Predefinidos -->
+        <div class="pt-4">
+          <h4 class="text-base font-bold text-slate-800 mb-4">Materiales Más Comunes en la Escuela y el Hogar</h4>
+          <div id="wiki-materials-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            <!-- Renderizado dinámico desde app.js -->
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================== -->
+    <!-- PESTAÑA 3: TIPS & DIY (¿QUÉ HACER CON TU BASURA?)       -->
+    <!-- ====================================================== -->
+    <section id="section-diy" class="tab-content hidden space-y-8">
+      
+      <!-- Cabecera DIY -->
+      <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="text-2xl">💡</span>
+            <h2 class="text-2xl sm:text-3xl font-bold text-slate-900 font-heading">Tips & Upcycling DIY</h2>
+          </div>
+          <p class="text-slate-500 text-sm mt-1">
+            ¡No todo es basura! Aprende manualidades, inventos y trucos para transformar residuos escolares y del hogar.
+          </p>
+        </div>
+
+        <button onclick="AppUI.openModal('modal-create-diy')" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs sm:text-sm py-3 px-6 rounded-2xl shadow-lg shadow-emerald-600/20 transition-all flex items-center gap-2">
+          <span>✂️</span> Compartir Idea DIY
+        </button>
+      </div>
+
+      <!-- Barra de Filtro de Dificultad -->
+      <div class="flex items-center gap-2 overflow-x-auto pb-2 text-xs font-semibold text-slate-600">
+        <span class="text-slate-400 font-bold mr-2">Filtrar por:</span>
+        <button onclick="AppState.diyFilter = 'all'; AppState.renderDIY()" class="px-4 py-2 rounded-xl bg-white border border-slate-200 hover:border-emerald-500 transition-colors">Todos</button>
+        <button onclick="AppState.diyFilter = 'Fácil'; AppState.renderDIY()" class="px-4 py-2 rounded-xl bg-white border border-slate-200 hover:border-emerald-500 transition-colors">🟢 Fácil</button>
+        <button onclick="AppState.diyFilter = 'Intermedio'; AppState.renderDIY()" class="px-4 py-2 rounded-xl bg-white border border-slate-200 hover:border-emerald-500 transition-colors">🟡 Intermedio</button>
+        <button onclick="AppState.diyFilter = 'Botellas'; AppState.renderDIY()" class="px-4 py-2 rounded-xl bg-white border border-slate-200 hover:border-emerald-500 transition-colors">🥤 Botellas PET</button>
+        <button onclick="AppState.diyFilter = 'Latas'; AppState.renderDIY()" class="px-4 py-2 rounded-xl bg-white border border-slate-200 hover:border-emerald-500 transition-colors">🥫 Latas</button>
+      </div>
+
+      <!-- Cuadrícula Dinámica DIY -->
+      <div id="diy-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6">
+        <!-- Renderizado dinámico desde app.js -->
+      </div>
+    </section>
+
+    <!-- ====================================================== -->
+    <!-- PESTAÑA 4: FORO COMUNITARIO CON MODERACIÓN ANTI-BS     -->
+    <!-- ====================================================== -->
+    <section id="section-community" class="tab-content hidden space-y-8">
+      
+      <!-- Cabecera de Moderación y Ética Escolar con IA -->
+      <div class="bg-gradient-to-r from-emerald-950 via-slate-900 to-teal-950 rounded-3xl p-6 sm:p-8 text-white space-y-4 shadow-xl">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div class="space-y-1">
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 text-xs font-bold border border-emerald-500/30">
+              <span class="ai-pulse-dot">🛡️</span> Filtro Ético y Anti-Bullshit con IA Activo
+            </div>
+            <h3 class="text-2xl font-bold font-heading">Foro Escolar de Debate y Mercado</h3>
+            <p class="text-xs text-slate-300 max-w-2xl leading-relaxed">
+              En EcoCash protegemos un ambiente escolar limpio y de respeto mutuo. Nuestro detector de IA analiza cada mensaje en tiempo real para bloquear <strong>groserías, acoso, desinformación ecológica absurda (bullshit) y estafas</strong>.
+            </p>
+          </div>
+
+          <div class="bg-white/10 backdrop-blur-md px-4 py-3 rounded-2xl border border-white/15 text-center shrink-0">
+            <span class="block text-xl font-black text-emerald-400 font-heading">100% Limpio</span>
+            <span class="text-[10px] text-slate-300 uppercase tracking-wider font-bold">Filtro Gemini Activo</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        
+        <!-- Formulario de Publicación de Comentario con Stickers -->
+        <div class="lg:col-span-1 space-y-6">
+          <div class="bg-white p-6 rounded-3xl border border-slate-200/90 shadow-sm space-y-5 sticky top-24">
+            <div class="space-y-1">
+              <h4 class="font-bold text-slate-900 text-base">Escribir en el Tablón</h4>
+              <p class="text-xs text-slate-500">Deja una pregunta, coordina una entrega o felicita una iniciativa.</p>
+            </div>
+
+            <form onsubmit="AppState.handlePostComment(event, true)" class="space-y-4">
+              <!-- Selector de Stickers Ecológicos -->
+              <div class="space-y-2">
+                <label class="block text-xs font-bold text-slate-700">
+                  Selecciona un Sticker Ecológico:
+                </label>
+                <div id="community-comment-stickers" class="grid grid-cols-6 gap-2">
+                  <!-- Renderizado dinámico de stickers -->
+                </div>
+              </div>
+
+              <!-- Área de Texto -->
+              <div class="space-y-1">
+                <label class="block text-xs font-bold text-slate-700">Tu Comentario:</label>
+                <textarea id="community-comment-input" 
+                          rows="4" 
+                          required 
+                          placeholder="Escribe tu mensaje respetuoso y constructivo aquí..." 
+                          class="w-full p-3.5 rounded-2xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all"></textarea>
+                <div class="flex items-center justify-between text-[11px] text-slate-400">
+                  <span>✨ Tu comentario será verificado por Eco-AI</span>
+                  <span>Max. 400 carácteres</span>
+                </div>
+              </div>
+
+              <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-4 rounded-xl text-xs transition-all shadow-md shadow-emerald-600/20 flex items-center justify-center gap-2">
+                <span>💬</span> Publicar con Verificación Eco-AI
+              </button>
+            </form>
+          </div>
+        </div>
+
+        <!-- Feed de Comentarios Comunitarios -->
+        <div class="lg:col-span-2 space-y-4">
+          <h4 class="text-base font-bold text-slate-900 flex items-center gap-2">
+            <span>🌿</span> Mensajes de la Comunidad Escolar
+          </h4>
+
+          <div id="community-comments-list" class="space-y-3">
+            <!-- Renderizado dinámico desde app.js -->
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ====================================================== -->
+    <!-- PESTAÑA 5: COTIZADOR IA DE MATERIALES                   -->
+    <!-- ====================================================== -->
+    <section id="section-cotizador" class="tab-content hidden space-y-8">
+      <div class="max-w-3xl mx-auto bg-white rounded-3xl p-6 sm:p-10 border border-slate-200/90 shadow-sm space-y-8">
+        
+        <div class="space-y-2 text-center max-w-xl mx-auto">
+          <div class="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center text-2xl mx-auto">
+            ⚖️
+          </div>
+          <h2 class="text-2xl sm:text-3xl font-bold text-slate-900 font-heading">Cotizador de Valoración IA</h2>
+          <p class="text-slate-500 text-xs sm:text-sm">
+            Calcula el valor económico que puedes obtener por tus materiales reciclables en centros de acopio y chatarreras.
+          </p>
+        </div>
+
+        <form onsubmit="AppState.handleCotizador(event)" class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+          <div class="sm:col-span-2 space-y-1">
+            <label class="block text-xs font-bold text-slate-700">Material a Cotizar</label>
+            <input type="text" id="cot-material" required placeholder="Ej. Cobre brillante, Aluminio bote, Plástico PET, Cartón" class="w-full px-4 py-3 rounded-xl border border-slate-200 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+          </div>
+          <div class="space-y-1">
+            <label class="block text-xs font-bold text-slate-700">Cantidad</label>
+            <input type="number" step="any" id="cot-cantidad" required placeholder="Ej. 15" class="w-full px-4 py-3 rounded-xl border border-slate-200 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+          </div>
+          <div class="space-y-1">
+            <label class="block text-xs font-bold text-slate-700">Unidad</label>
+            <select id="cot-medida" class="w-full px-3 py-3 rounded-xl border border-slate-200 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 font-medium">
+              <option value="Kg">Kilogramos (Kg)</option>
+              <option value="Toneladas">Toneladas</option>
+              <option value="Litros">Litros (L)</option>
+              <option value="Piezas">Piezas / Unidades</option>
+            </select>
+          </div>
+          <div class="sm:col-span-4 pt-2">
+            <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 px-6 rounded-xl transition-all shadow-md shadow-emerald-600/20 text-sm">
+              Calcular Estimado con IA
+            </button>
+          </div>
+        </form>
+
+        <!-- Loading Cotizador -->
+        <div id="cot-loading" class="hidden text-center py-6">
+          <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-emerald-500 border-t-transparent"></div>
+          <p class="text-xs text-slate-400 mt-2 font-medium">Consultando tarifas de mercado actuales...</p>
+        </div>
+
+        <!-- Resultado Cotizador -->
+        <div id="cot-result-box" class="hidden space-y-6 pt-6 border-t border-slate-100">
+          <div class="bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 rounded-2xl p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div>
+              <span class="text-xs uppercase font-extrabold tracking-wider text-emerald-800">Total Estimado en Mercado</span>
+              <h3 id="cot-res-title" class="text-xl font-bold text-slate-900 capitalize">Material</h3>
+            </div>
+            <div id="cot-res-total" class="text-3xl sm:text-4xl font-black text-emerald-600 font-heading">
+              $0.00 MXN
+            </div>
+          </div>
+
+          <div class="grid grid-cols-3 gap-3 text-center text-xs">
+            <div class="bg-slate-50 p-3 rounded-xl border border-slate-100">
+              <span class="block text-slate-400 font-medium">Precio por Kg</span>
+              <span id="cot-res-kg" class="font-bold text-slate-800 text-sm">$0.00</span>
+            </div>
+            <div class="bg-slate-50 p-3 rounded-xl border border-slate-100">
+              <span class="block text-slate-400 font-medium">Precio por Litro</span>
+              <span id="cot-res-l" class="font-bold text-slate-800 text-sm">$0.00</span>
+            </div>
+            <div class="bg-slate-50 p-3 rounded-xl border border-slate-100">
+              <span class="block text-slate-400 font-medium">Precio por Onza</span>
+              <span id="cot-res-onz" class="font-bold text-slate-800 text-sm">$0.00</span>
+            </div>
+          </div>
+
+          <div class="space-y-2 text-xs">
+            <p id="cot-res-explain" class="text-slate-600 leading-relaxed"></p>
+            <div class="p-3 bg-amber-50 border border-amber-200 rounded-xl text-amber-800 font-medium flex items-start gap-2">
+              <span>💡</span>
+              <span id="cot-res-ecotip"></span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ======================================================== -->
+  <!-- MODALES DEL SISTEMA                                      -->
+  <!-- ======================================================== -->
+
+  <!-- MODAL 1: AUTENTICACIÓN Y GESTIÓN DE CUENTAS (GOOGLE + DEMO) -->
+  <div id="modal-auth" class="modal-overlay hidden-modal fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+    <div class="modal-box bg-white w-full max-w-md rounded-3xl p-6 sm:p-8 space-y-6 shadow-2xl border border-slate-100 max-h-[90vh] overflow-y-auto">
+      
+      <div class="flex items-center justify-between border-b border-slate-100 pb-4">
+        <div class="flex items-center gap-2">
+          <span class="text-2xl">👤</span>
+          <h3 class="text-xl font-bold text-slate-900 font-heading">Iniciar Sesión en EcoCash</h3>
+        </div>
+        <button onclick="AppUI.closeModal('modal-auth')" class="text-slate-400 hover:text-slate-600 text-lg">✕</button>
+      </div>
+
+      <!-- Botón Principal: Continuar con Google -->
+      <button onclick="EcoAuth.signInWithGoogle().then(res => { AppUI.closeModal('modal-auth'); AppUI.showToast('Bienvenido', 'Has iniciado sesión con tu cuenta Google.', 'success'); })" 
+              class="w-full flex items-center justify-center gap-3 bg-white hover:bg-slate-50 text-slate-700 font-bold py-3.5 px-4 rounded-2xl border border-slate-300 shadow-sm transition-all text-xs sm:text-sm">
+        <svg class="w-5 h-5" viewBox="0 0 24 24">
+          <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17z"/>
+          <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.33 24 12 24z"/>
+          <path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 9.98 0 12s.45 3.82 1.25 5.42l4.03-3.15z"/>
+          <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.33 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"/>
+        </svg>
+        <span>Continuar con Google</span>
+      </button>
+
+      <div class="relative flex py-1 items-center">
+        <div class="flex-grow border-t border-slate-200"></div>
+        <span class="flex-shrink mx-3 text-slate-400 text-xs font-semibold uppercase">O probar perfiles de evaluación</span>
+        <div class="flex-grow border-t border-slate-200"></div>
+      </div>
+
+      <!-- Selector de Perfiles de Prueba Escolares (Para jurado y evaluación) -->
+      <div class="space-y-2">
+        <span class="block text-xs font-bold text-slate-700">Cambiar entre identidades escolares:</span>
+        <div class="grid grid-cols-1 gap-2 text-xs">
+          <button type="button" onclick="EcoAuth.switchDemoProfile('sofia'); AppUI.closeModal('modal-auth'); AppUI.showToast('Sesión Activa', 'Conectado como Sofía Martínez (Autora Post 1 & DIY 1)', 'info')" class="flex items-center gap-3 p-2.5 rounded-xl border border-slate-200 hover:bg-emerald-50 hover:border-emerald-300 transition-colors text-left">
+            <img src="https://api.dicebear.com/7.x/bottts/svg?seed=Sofia" class="w-8 h-8 rounded-full bg-emerald-100">
+            <div>
+              <span class="block font-bold text-slate-800">Sofía Martínez (3ro B)</span>
+              <span class="text-[10px] text-slate-400">Puede borrar Post 1 de PET y DIY de Maceta</span>
+            </div>
+          </button>
+
+          <button type="button" onclick="EcoAuth.switchDemoProfile('mateo'); AppUI.closeModal('modal-auth'); AppUI.showToast('Sesión Activa', 'Conectado como Mateo Gómez (Autor Post 2 & DIY 2)', 'info')" class="flex items-center gap-3 p-2.5 rounded-xl border border-slate-200 hover:bg-emerald-50 hover:border-emerald-300 transition-colors text-left">
+            <img src="https://api.dicebear.com/7.x/bottts/svg?seed=Mateo" class="w-8 h-8 rounded-full bg-emerald-100">
+            <div>
+              <span class="block font-bold text-slate-800">Mateo Gómez (Taller Técnico)</span>
+              <span class="text-[10px] text-slate-400">Puede borrar Post 2 de Cobre y DIY de Latas</span>
+            </div>
+          </button>
+
+          <button type="button" onclick="EcoAuth.switchDemoProfile('carlos'); AppUI.closeModal('modal-auth'); AppUI.showToast('Sesión Activa', 'Conectado como Prof. Carlos Rivera', 'info')" class="flex items-center gap-3 p-2.5 rounded-xl border border-slate-200 hover:bg-emerald-50 hover:border-emerald-300 transition-colors text-left">
+            <img src="https://api.dicebear.com/7.x/bottts/svg?seed=Carlos" class="w-8 h-8 rounded-full bg-emerald-100">
+            <div>
+              <span class="block font-bold text-slate-800">Prof. Carlos Rivera (Docente)</span>
+              <span class="text-[10px] text-slate-400">Puede borrar Donación de Cajas y DIY Composta</span>
+            </div>
+          </button>
+        </div>
+      </div>
+
+      <div class="pt-2 border-t border-slate-100 flex items-center justify-between text-xs">
+        <button onclick="EcoAuth.signOut(); AppUI.closeModal('modal-auth'); AppUI.showToast('Sesión Cerrada', 'Has salido de tu cuenta.', 'info')" class="text-red-600 hover:underline font-bold">
+          Cerrar Sesión Actual
+        </button>
+        <button onclick="AppUI.openModal('modal-deploy-guide')" class="text-emerald-600 font-bold hover:underline">
+          Configurar Firebase Real →
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- MODAL 2: CREAR PUBLICACIÓN EN EL MARKET -->
+  <div id="modal-create-post" class="modal-overlay hidden-modal fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+    <div class="modal-box bg-white w-full max-w-xl rounded-3xl p-6 sm:p-8 space-y-6 shadow-2xl border border-slate-100 max-h-[90vh] overflow-y-auto">
+      
+      <div class="flex items-center justify-between border-b border-slate-100 pb-4">
+        <div class="flex items-center gap-2">
+          <span class="text-2xl">📦</span>
+          <h3 class="text-xl font-bold text-slate-900 font-heading">Publicar Residuo en el Market</h3>
+        </div>
+        <button onclick="AppUI.closeModal('modal-create-post')" class="text-slate-400 hover:text-slate-600 text-lg">✕</button>
+      </div>
+
+      <form id="form-create-post" onsubmit="AppState.handleCreateMarketPost(event)" class="space-y-4 text-xs sm:text-sm">
+        
+        <div class="space-y-1">
+          <label class="block font-bold text-slate-700">Título de la Publicación *</label>
+          <input type="text" id="post-title" required placeholder="Ej. Lote de 20 kg de cartón seco y doblado" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div class="space-y-1">
+            <label class="block font-bold text-slate-700">Tipo de Publicación *</label>
+            <select id="post-type" class="w-full px-3 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 font-medium">
+              <option value="Venta">💰 En Venta</option>
+              <option value="Donacion">🎁 Donación / Regalo</option>
+              <option value="PuntoAcopio">🏢 Punto de Acopio</option>
+            </select>
+          </div>
+
+          <div class="space-y-1">
+            <label class="block font-bold text-slate-700">Categoría *</label>
+            <select id="post-category" class="w-full px-3 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 font-medium">
+              <option value="Plásticos">Plásticos (PET, PEAD, Tapas)</option>
+              <option value="Metales / Chatarra">Metales y Chatarra (Cobre, Aluminio)</option>
+              <option value="Papel y Cartón">Papel y Cartón</option>
+              <option value="Vidrio">Vidrio y Frascos</option>
+              <option value="Electrónicos">Electrónicos y Pilas</option>
+              <option value="Orgánicos">Orgánicos / Composta</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div class="space-y-1">
+            <label class="block font-bold text-slate-700">Precio Estimado o Condición</label>
+            <input type="text" id="post-price" placeholder="Ej. $120 MXN o ¡GRATIS!" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+          </div>
+
+          <div class="space-y-1">
+            <label class="block font-bold text-slate-700">Ubicación / Punto de Entrega *</label>
+            <input type="text" id="post-location" required placeholder="Ej. Campus Norte, Taller de Robótica" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+          </div>
+        </div>
+
+        <div class="space-y-1">
+          <label class="block font-bold text-slate-700">Descripción y Estado del Material *</label>
+          <textarea id="post-desc" rows="3" required placeholder="Describe si está limpio, seco, cantidad aproximada o cómo entregarlo..." class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"></textarea>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div class="space-y-1">
+            <label class="block font-bold text-slate-700">Contacto / Teléfono o Correo</label>
+            <input type="text" id="post-contact" placeholder="Ej. WhatsApp 55-1234-5678" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+          </div>
+
+          <div class="space-y-1">
+            <label class="block font-bold text-slate-700">URL Imagen (Opcional)</label>
+            <input type="url" id="post-image" placeholder="https://..." class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+          </div>
+        </div>
+
+        <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 text-slate-500 text-xs flex items-center gap-2">
+          <span>🛡️</span>
+          <span>Como creador, tendrás control exclusivo para eliminar esta publicación cuando se complete la venta o entrega.</span>
+        </div>
+
+        <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 px-6 rounded-xl transition-all shadow-md shadow-emerald-600/20">
+          Publicar en Eco-Market
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL 3: CREAR GUÍA DIY (UPCYCLING) -->
+  <div id="modal-create-diy" class="modal-overlay hidden-modal fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+    <div class="modal-box bg-white w-full max-w-xl rounded-3xl p-6 sm:p-8 space-y-6 shadow-2xl border border-slate-100 max-h-[90vh] overflow-y-auto">
+      
+      <div class="flex items-center justify-between border-b border-slate-100 pb-4">
+        <div class="flex items-center gap-2">
+          <span class="text-2xl">✂️</span>
+          <h3 class="text-xl font-bold text-slate-900 font-heading">Compartir Proyecto DIY (Upcycling)</h3>
+        </div>
+        <button onclick="AppUI.closeModal('modal-create-diy')" class="text-slate-400 hover:text-slate-600 text-lg">✕</button>
+      </div>
+
+      <form id="form-create-diy" onsubmit="AppState.handleCreateDIY(event)" class="space-y-4 text-xs sm:text-sm">
+        
+        <div class="space-y-1">
+          <label class="block font-bold text-slate-700">Título del Proyecto DIY *</label>
+          <input type="text" id="diy-title" required placeholder="Ej. Lámpara de escritorio con latas y madera vieja" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+        </div>
+
+        <div class="grid grid-cols-3 gap-3">
+          <div class="space-y-1">
+            <label class="block font-bold text-slate-700">Material Base *</label>
+            <input type="text" id="diy-material" required placeholder="Ej. Botellas PET, Cartón" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+          </div>
+          <div class="space-y-1">
+            <label class="block font-bold text-slate-700">Dificultad</label>
+            <select id="diy-difficulty" class="w-full px-3 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 font-medium">
+              <option value="Fácil">🟢 Fácil</option>
+              <option value="Intermedio">🟡 Intermedio</option>
+              <option value="Avanzado">🔴 Avanzado</option>
+            </select>
+          </div>
+          <div class="space-y-1">
+            <label class="block font-bold text-slate-700">Tiempo Estimado</label>
+            <input type="text" id="diy-time" placeholder="Ej. 25 min" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+          </div>
+        </div>
+
+        <div class="space-y-1">
+          <label class="block font-bold text-slate-700">Materiales Necesarios (Uno por línea) *</label>
+          <textarea id="diy-materials-list" rows="3" required placeholder="1 botella plástica&#10;Tijeras&#10;Cuerda de algodón&#10;Tierra para macetas" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"></textarea>
+        </div>
+
+        <div class="space-y-1">
+          <label class="block font-bold text-slate-700">Pasos de Fabricación (Uno por línea) *</label>
+          <textarea id="diy-steps-list" rows="4" required placeholder="Paso 1: Cortar la botella a la mitad&#10;Paso 2: Perforar la tapita con un clavo caliente&#10;Paso 3: Pasar la cuerda y agregar la tierra" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"></textarea>
+        </div>
+
+        <div class="space-y-1">
+          <label class="block font-bold text-slate-700">URL Imagen del Proyecto (Opcional)</label>
+          <input type="url" id="diy-image" placeholder="https://..." class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+        </div>
+
+        <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 px-6 rounded-xl transition-all shadow-md shadow-emerald-600/20">
+          Publicar Guía DIY Escolar
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL 4: DETALLES Y COMENTARIOS DE PUBLICACIÓN CON STICKERS Y MODERADOR IA -->
+  <div id="modal-comments" class="modal-overlay hidden-modal fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+    <div class="modal-box bg-white w-full max-w-2xl rounded-3xl p-6 sm:p-8 space-y-6 shadow-2xl border border-slate-100 max-h-[92vh] overflow-y-auto">
+      
+      <div class="flex items-start justify-between border-b border-slate-100 pb-4">
+        <div>
+          <span id="modal-comment-post-meta" class="text-xs font-bold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-md border border-emerald-100"></span>
+          <h3 id="modal-comment-post-title" class="text-xl font-bold text-slate-900 font-heading mt-2">Título de la Publicación</h3>
+          <p id="modal-comment-post-desc" class="text-xs text-slate-600 mt-1 leading-relaxed"></p>
+          <p id="modal-comment-post-contact" class="text-xs font-semibold text-slate-700 mt-1"></p>
+        </div>
+        <button onclick="AppUI.closeModal('modal-comments')" class="text-slate-400 hover:text-slate-600 text-lg">✕</button>
+      </div>
+
+      <!-- Barra de Moderación Activa de Comentarios -->
+      <div class="p-3 bg-emerald-50 border border-emerald-200 rounded-2xl flex items-center justify-between text-xs">
+        <div class="flex items-center gap-2 text-emerald-800 font-bold">
+          <span class="ai-pulse-dot">🛡️</span>
+          <span>Detector Anti-Bullshit & Groserías Escolar con Gemini IA</span>
+        </div>
+        <span class="text-[10px] text-emerald-700 font-medium">Activo</span>
+      </div>
+
+      <!-- Lista de Comentarios Existentes -->
+      <div class="space-y-3">
+        <h4 class="font-bold text-slate-800 text-xs">Preguntas y Negociación de Residuos:</h4>
+        <div id="post-comments-list" class="space-y-3 max-h-60 overflow-y-auto pr-1">
+          <!-- Renderizado dinámico -->
+        </div>
+      </div>
+
+      <!-- Formulario para Agregar Comentario -->
+      <form onsubmit="AppState.handlePostComment(event, false)" class="space-y-3 pt-3 border-t border-slate-100">
+        <div class="space-y-1.5">
+          <label class="block text-xs font-bold text-slate-700">Elige un Sticker Ecológico:</label>
+          <div id="market-comment-stickers" class="flex flex-wrap items-center gap-1.5">
+            <!-- Stickers dinámicos -->
+          </div>
+        </div>
+
+        <div class="space-y-1">
+          <textarea id="market-comment-input" 
+                    rows="3" 
+                    required 
+                    placeholder="Haz una pregunta al creador o coordina la entrega/compra..." 
+                    class="w-full p-3 rounded-2xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500"></textarea>
+        </div>
+
+        <div class="flex items-center justify-between">
+          <span class="text-[11px] text-slate-400">Verificado automáticamente antes de publicarse</span>
+          <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-5 rounded-xl text-xs transition-all shadow-md shadow-emerald-600/20">
+            Enviar Comentario Verificado
+          </button>
+        </div>
+      </form>
+
+    </div>
+  </div>
+
+  <!-- MODAL 5: CONFIGURACIÓN CLAVE DIRECTA DE GEMINI (CERO CRÉDITOS, CERO 404) -->
+  <div id="modal-gemini-key" class="modal-overlay hidden-modal fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+    <div class="modal-box bg-white w-full max-w-lg rounded-3xl p-6 sm:p-8 space-y-6 shadow-2xl border border-slate-100 max-h-[92vh] overflow-y-auto">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-4">
+        <div class="flex items-center gap-2">
+          <span class="text-2xl">🔑</span>
+          <h3 class="text-xl font-bold text-slate-900 font-heading">Conectar Inteligencia Artificial (Gemini)</h3>
+        </div>
+        <button onclick="AppUI.closeModal('modal-gemini-key')" class="text-slate-400 hover:text-slate-600 text-lg">✕</button>
+      </div>
+
+      <div class="space-y-4 text-xs sm:text-sm text-slate-600">
+        <div class="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl space-y-2">
+          <div class="flex items-center gap-2 text-emerald-900 font-bold">
+            <span class="ai-pulse-dot">⚡</span>
+            <span>Conexión Directa a Google AI Studio</span>
+          </div>
+          <p class="text-xs text-emerald-800 leading-relaxed">
+            Al conectar tu clave aquí, la web se comunica <strong>directamente con Google</strong> desde tu navegador. 
+            <strong>No gastas créditos de ningún hosting</strong> (ni Netlify, ni Vercel) y <strong>nunca verás errores 404 de funciones caídas</strong>.
+          </p>
+        </div>
+
+        <div class="space-y-1">
+          <label class="block font-bold text-slate-700">Tu Clave API de Google Gemini:</label>
+          <input type="password" id="input-direct-gemini-key" placeholder="AIzaSy..." class="w-full px-4 py-3 rounded-xl border border-slate-200 font-mono text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500">
+          <span class="text-[11px] text-slate-400 block pt-1">
+            ¿No tienes una? Consíguela gratis en <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-emerald-600 font-bold underline">Google AI Studio</a> en 30 segundos sin tarjeta.
+          </span>
+        </div>
+
+        <div id="gemini-test-feedback" class="hidden p-3 rounded-xl text-xs font-semibold"></div>
+
+        <div class="flex items-center gap-3 pt-2">
+          <button onclick="saveAndTestGeminiKey()" class="flex-grow bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-4 rounded-xl text-xs transition-all shadow-md shadow-emerald-600/20">
+            Guardar y Probar Conexión
+          </button>
+          <button onclick="clearGeminiKey()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold py-3 px-4 rounded-xl text-xs transition-all">
+            Limpiar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 6: GUÍA PASO A PASO PARA PUBLICAR EN VERCEL / GITHUB PAGES (100% GRATIS) -->
+  <div id="modal-deploy-guide" class="modal-overlay hidden-modal fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+    <div class="modal-box bg-white w-full max-w-2xl rounded-3xl p-6 sm:p-8 space-y-6 shadow-2xl border border-slate-100 max-h-[92vh] overflow-y-auto">
+      
+      <div class="flex items-center justify-between border-b border-slate-100 pb-4">
+        <div class="flex items-center gap-2">
+          <span class="text-2xl">🚀</span>
+          <h3 class="text-xl font-bold text-slate-900 font-heading">Publicar Online Gratis (Sin límites de Netlify)</h3>
+        </div>
+        <button onclick="AppUI.closeModal('modal-deploy-guide')" class="text-slate-400 hover:text-slate-600 text-lg">✕</button>
+      </div>
+
+      <div class="space-y-5 text-xs sm:text-sm text-slate-600 leading-relaxed">
+        <p>
+          Si se agotaron tus créditos en Netlify o tuviste errores 404, tienes <strong>dos alternativas mucho mejores y 100% gratuitas</strong>:
+        </p>
+
+        <!-- Opción A: Vercel -->
+        <div class="p-4 rounded-2xl bg-slate-900 text-white space-y-2.5 shadow-md">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2 font-bold text-emerald-400 text-sm">
+              <span class="w-6 h-6 rounded-full bg-emerald-500 text-slate-950 flex items-center justify-center text-xs font-black">A</span>
+              <span>Opción Recomendada: VERCEL (Zero-Config)</span>
+            </div>
+            <span class="text-[10px] bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded-full font-bold">100% Gratis</span>
+          </div>
+          <p class="text-xs text-slate-300">
+            Ya hemos creado el archivo <code class="text-emerald-400 font-mono">vercel.json</code> y la carpeta <code class="text-emerald-400 font-mono">api/</code> listos para Vercel.
+          </p>
+          <ol class="text-xs text-slate-300 list-decimal list-inside space-y-1">
+            <li>Sube tu proyecto a GitHub (<code class="text-emerald-300">git push</code>).</li>
+            <li>Entra a <a href="https://vercel.com" target="_blank" class="text-emerald-400 font-bold underline">Vercel.com</a> e inicia sesión con GitHub.</li>
+            <li>Haz clic en <strong>"Add New..." → "Project"</strong> e importa tu repositorio.</li>
+            <li>En <strong>Environment Variables</strong> añade <code class="text-emerald-300">GEMINI_API_KEY</code> con tu clave gratuita.</li>
+            <li>Haz clic en <strong>"Deploy"</strong>. ¡Tu sitio estará listo en <code class="text-emerald-400">tu-proyecto.vercel.app</code> sin límites de crédito!</li>
+          </ol>
+        </div>
+
+        <!-- Opción B: GitHub Pages -->
+        <div class="p-4 rounded-2xl bg-blue-50 border border-blue-200 space-y-2">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2 font-bold text-blue-900 text-sm">
+              <span class="w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-black">B</span>
+              <span>Opción Directa: GITHUB PAGES (Ilimitado y Gratis Siempre)</span>
+            </div>
+            <span class="text-[10px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-bold">Para Siempre</span>
+          </div>
+          <p class="text-xs text-blue-950">
+            1. En tu repositorio de GitHub, ve a la pestaña <strong>Settings</strong>.<br>
+            2. En el menú lateral izquierdo, haz clic en <strong>Pages</strong>.<br>
+            3. En <strong>Branch</strong>, selecciona <code class="bg-white px-1 py-0.5 rounded text-[11px] font-bold">main</code> y carpeta <code class="bg-white px-1 py-0.5 rounded text-[11px] font-bold">/ (root)</code>.<br>
+            4. Haz clic en <strong>Save</strong>. En 1 minuto tendrás tu enlace: <code class="text-blue-700 font-bold">https://tu-usuario.github.io/tu-repo/</code>.<br>
+            5. Para la IA, solo debes ingresar tu clave en el botón superior <strong>"🔑 Clave IA"</strong> o en el archivo <code class="bg-white px-1 py-0.5 rounded text-[11px]">public/js/config.js</code>.
+          </p>
+        </div>
+
+        <!-- Opción C: Firebase -->
+        <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
+          <div class="flex items-center gap-2 font-bold text-slate-800 text-xs">
+            <span>🔥</span>
+            <span>Configuración Opcional de Firebase (Google Sign-In)</span>
+          </div>
+          <p class="text-[11px] text-slate-500">
+            Pega tu JSON de Firebase Console para sincronizar el login con Google:
+          </p>
+          <textarea id="input-firebase-config" rows="2" placeholder='{"apiKey":"AIza...","authDomain":"...firebaseapp.com","projectId":"..."}' class="w-full p-2.5 rounded-xl border border-slate-300 bg-white font-mono text-[11px]"></textarea>
+          <button onclick="saveFirebaseCredentials()" class="bg-slate-800 hover:bg-slate-900 text-white font-bold py-1.5 px-4 rounded-xl text-xs transition-all">
+            Guardar Firebase
+          </button>
+        </div>
+
+      </div>
+
+      <div class="pt-3 border-t border-slate-100 flex justify-end">
+        <button onclick="AppUI.closeModal('modal-deploy-guide')" class="bg-slate-900 text-white text-xs font-bold py-2.5 px-6 rounded-xl">
+          Entendido, cerrar
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- CONTENEDOR FLOTANTE DE NOTIFICACIONES TOAST -->
+  <div id="toast-container"></div>
+
+  <!-- ======================================================== -->
+  <!-- PIE DE PÁGINA PROFESIONAL                                -->
+  <!-- ======================================================== -->
+  <footer class="bg-white border-t border-slate-200/80 py-10 mt-16 text-slate-500 text-xs">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+      
+      <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 rounded-xl bg-emerald-600 text-white flex items-center justify-center text-base">🌱</div>
+          <span class="font-extrabold text-slate-800 text-sm">EcoCash</span>
+          <span class="text-slate-400">|</span>
+          <span class="text-slate-500">Iniciativa Escolar de Reciclaje y Economía Circular</span>
+        </div>
+
+        <div class="flex items-center gap-4 text-xs font-semibold">
+          <button onclick="AppState.switchTab('market')" class="hover:text-emerald-600 transition-colors">Mercado</button>
+          <button onclick="AppState.switchTab('wiki')" class="hover:text-emerald-600 transition-colors">Eco-Wiki</button>
+          <button onclick="AppState.switchTab('diy')" class="hover:text-emerald-600 transition-colors">Tips DIY</button>
+          <button onclick="AppState.switchTab('community')" class="hover:text-emerald-600 transition-colors">Foro IA</button>
+          <button onclick="AppUI.openModal('modal-deploy-guide')" class="text-blue-600 hover:underline">Guía Online</button>
+        </div>
+      </div>
+
+      <div class="border-t border-slate-100 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] text-slate-400">
+        <p>EcoCash &copy; 2026 • Desarrollado para la presentación del Proyecto Escolar. Potenciado por Google Gemini IA.</p>
+        <p>Solo los creadores pueden eliminar sus propias publicaciones y proyectos.</p>
+      </div>
+
+    </div>
+  </footer>
+
+  <!-- Scripts del Proyecto -->
+  <script src="js/config.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/ai.js"></script>
+  <script src="js/app.js"></script>
+
+  <script>
+    // Inicializar indicador de estado de la IA al cargar
+    document.addEventListener('DOMContentLoaded', () => {
+      const currentKey = EcoAI.getApiKey();
+      const inputKey = document.getElementById('input-direct-gemini-key');
+      const dot = document.getElementById('nav-ai-status-dot');
+      if (currentKey && inputKey) {
+        inputKey.value = currentKey;
+        if (dot) dot.className = "w-2 h-2 rounded-full bg-emerald-500 inline-block";
+      } else if (dot) {
+        dot.className = "w-2 h-2 rounded-full bg-amber-400 inline-block animate-pulse";
+      }
+    });
+
+    async function saveAndTestGeminiKey() {
+      const input = document.getElementById('input-direct-gemini-key');
+      const feedback = document.getElementById('gemini-test-feedback');
+      const dot = document.getElementById('nav-ai-status-dot');
+      const val = input.value.trim();
+
+      if (!val) {
+        AppUI.showToast("Clave Vacía", "Por favor ingresa una clave válida de Google AI Studio.", "warning");
+        return;
+      }
+
+      feedback.className = "p-3 rounded-xl text-xs font-semibold bg-slate-100 text-slate-700 block";
+      feedback.innerText = "⏳ Probando conexión directa con Google Gemini...";
+
+      EcoAI.setApiKey(val);
+
+      try {
+        const testRes = await EcoAI.callDirectGemini("Di 'Conexión exitosa' en 2 palabras.");
+        feedback.className = "p-3 rounded-xl text-xs font-semibold bg-emerald-100 text-emerald-800 border border-emerald-300 block";
+        feedback.innerText = "✅ ¡Conexión Exitosa con Google Gemini! La IA está conectada directo desde tu navegador.";
+        if (dot) dot.className = "w-2 h-2 rounded-full bg-emerald-500 inline-block";
+        AppUI.showToast("IA Conectada", "Gemini 1.5 Flash está activo sin servidores intermediarios.", "success");
+        setTimeout(() => AppUI.closeModal('modal-gemini-key'), 2000);
+      } catch (err) {
+        feedback.className = "p-3 rounded-xl text-xs font-semibold bg-red-100 text-red-800 border border-red-300 block";
+        feedback.innerText = "❌ Clave inválida o error: " + err.message;
+        if (dot) dot.className = "w-2 h-2 rounded-full bg-red-500 inline-block";
+      }
+    }
+
+    function clearGeminiKey() {
+      EcoAI.setApiKey(null);
+      const input = document.getElementById('input-direct-gemini-key');
+      if (input) input.value = '';
+      const feedback = document.getElementById('gemini-test-feedback');
+      if (feedback) feedback.classList.add('hidden');
+      const dot = document.getElementById('nav-ai-status-dot');
+      if (dot) dot.className = "w-2 h-2 rounded-full bg-amber-400 inline-block animate-pulse";
+      AppUI.showToast("Clave Removida", "Se activó el modo de respaldo inteligente local.", "info");
+    }
+
+    function saveFirebaseCredentials() {
+      const val = document.getElementById('input-firebase-config').value.trim();
+      if (!val) {
+        AppUI.showToast("Error", "Ingresa una configuración JSON válida de Firebase.", "error");
+        return;
+      }
+      try {
+        JSON.parse(val);
+        localStorage.setItem('ecocash_firebase_config', val);
+        EcoAuth.initFirebaseIfConfigured();
+        AppUI.showToast("Firebase Configurado", "Credenciales guardadas. Ahora el inicio con Google se conectará a tu base de datos.", "success");
+        AppUI.closeModal('modal-deploy-guide');
+      } catch (e) {
+        AppUI.showToast("Formato Inválido", "Asegúrate de copiar el JSON completo de Firebase.", "error");
+      }
+    }
+  </script>
+</body>
+</html>
